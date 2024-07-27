@@ -1,26 +1,38 @@
 import { Injectable } from '@nestjs/common';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Document } from './entities/document.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class DocumentsService {
-  create(createDocumentDto: CreateDocumentDto) {
-    return 'This action adds a new document';
+  constructor(
+    @InjectRepository(Document)
+    private documentRepository: Repository<Document>,
+  ) {}
+
+  async create(createDocumentDto: CreateDocumentDto) {
+    return this.documentRepository.save(createDocumentDto);
   }
 
-  findAll() {
-    return `This action returns all documents`;
+  async findAll() {
+    return this.documentRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} document`;
+  async findOne(id: number) {
+    return this.documentRepository.findOne({ where: { id } });
   }
 
-  update(id: number, updateDocumentDto: UpdateDocumentDto) {
-    return `This action updates a #${id} document`;
+  async update(id: number, updateDocumentDto: UpdateDocumentDto) {
+    const toUpdate = await this.documentRepository.findOne({ where: { id } });
+
+    const updated = Object.assign(toUpdate, updateDocumentDto);
+
+    return this.documentRepository.save(updated);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} document`;
+  async remove(id: number) {
+    return this.documentRepository.delete(id);
   }
 }
