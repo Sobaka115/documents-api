@@ -5,6 +5,9 @@ export class Document {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column('integer')
+  userId: number;
+
   @Column('text')
   name: string;
 }
