@@ -8,7 +8,6 @@ import {
   Delete,
   UploadedFile,
   UseInterceptors,
-  StreamableFile,
   Res,
 } from '@nestjs/common';
 import { DocumentsService } from './documents.service';
