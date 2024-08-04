@@ -10,4 +10,7 @@ export class Document {
 
   @Column('text')
   name: string;
+
+  @Column('text', { nullable: true })
+  path: string | null;
 }

@@ -32,6 +32,13 @@ export class DocumentsService {
     return this.documentRepository.save(updated);
   }
 
+  async updatePath(id: number, path: string) {
+    const toUpdate = await this.documentRepository.findOne({ where: { id } });
+    const updated = Object.assign(toUpdate, { path });
+
+    return this.documentRepository.save(updated);
+  }
+
   async remove(id: number) {
     return this.documentRepository.delete(id);
   }
