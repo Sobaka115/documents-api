@@ -8,12 +8,15 @@ import {
   Delete,
   UploadedFile,
   UseInterceptors,
+  StreamableFile,
+  Res,
 } from '@nestjs/common';
 import { DocumentsService } from './documents.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { Response } from 'express';
 
 @Controller('documents')
 export class DocumentsController {
@@ -53,7 +56,9 @@ export class DocumentsController {
       storage: diskStorage({
         destination: 'uploads/img',
         filename: (req, file, cb) => {
-          cb(null, (Math.random() + 1).toString(36).substring(7));
+          const name = (Math.random() + 1).toString(36).substring(7);
+          const extention = file.mimetype.split('/')[1];
+          cb(null, `${name}.${extention}`);
         },
       }),
     }),
@@ -64,5 +69,20 @@ export class DocumentsController {
       statusCode: 200,
       data: file.path,
     };
+  }
+
+  @Get('download/:id')
+  async download(
+    @Param('id') id: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { path } = await this.documentsService.findOne(+id);
+    const file = await this.documentsService.download(+id);
+    response.setHeader('Content-Type', `image/${path.split('.')[1]}`);
+    response.setHeader(
+      'Content-Disposition',
+      `attachment; filename=${path.split('/')[2]}`,
+    );
+    response.send(file);
   }
 }

@@ -4,6 +4,8 @@ import { UpdateDocumentDto } from './dto/update-document.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Document } from './entities/document.entity';
 import { Repository } from 'typeorm';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class DocumentsService {
@@ -37,6 +39,11 @@ export class DocumentsService {
     const updated = Object.assign(toUpdate, { path });
 
     return this.documentRepository.save(updated);
+  }
+
+  async download(id: number) {
+    const document = await this.documentRepository.findOne({ where: { id } });
+    return readFileSync(join(process.cwd(), document.path));
   }
 
   async remove(id: number) {
