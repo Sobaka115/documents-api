@@ -78,4 +78,4 @@ Successfully configured application return response like:
 ```
 Configuration values should be equal to values from .env
 
-createdUsersCount value should be greater of equal to zero if database connected correctly
+createdDocumentsCount value should be greater of equal to zero if database connected correctly
