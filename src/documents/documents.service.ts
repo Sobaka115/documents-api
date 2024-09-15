@@ -49,4 +49,9 @@ export class DocumentsService {
   async remove(id: number) {
     return this.documentRepository.delete(id);
   }
+
+  async count() {
+    return await this.documentRepository.count();
+  }
+
 }

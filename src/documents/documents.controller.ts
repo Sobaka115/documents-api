@@ -17,9 +17,19 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { Response } from 'express';
 
+import { configuration } from '../config';
+
 @Controller('documents')
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
+
+  @Get('/health-check')
+  async healthCheck() {
+    return {
+      configuration: configuration(),
+      createdDocumentsCount: await this.documentsService.count(),
+    };
+  }
 
   @Post()
   create(@Body() createDocumentDto: CreateDocumentDto) {
