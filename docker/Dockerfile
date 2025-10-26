@@ -1,0 +1,18 @@
+FROM node:20-slim AS base
+
+RUN corepack enable
+COPY . /app
+WORKDIR /app
+
+FROM base AS prod-deps
+RUN npm install --prod
+
+FROM base AS build
+RUN npm install
+RUN npm run build
+
+FROM base
+COPY --from=prod-deps /app/node_modules /app/node_modules
+COPY --from=build /app/dist /app/dist
+EXPOSE 3000
+CMD [ "npm", "run", "start:prod" ]
