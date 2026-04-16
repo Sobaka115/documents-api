@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: documents-api
+  namespace: documents
+  labels:
+    app: documents-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: documents-api
+  template:
+    metadata:
+      labels:
+        app: documents-api
+    spec:
+      # Ждем пока Postgres поднимется
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:1.36
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z postgres-service 5432; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+          echo "Postgres is ready!"
+      containers:
+      - name: api
+        image: documents-api:local
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+        env:
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: documents-config
+              key: PORT
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: documents-config
+              key: NODE_ENV
+        - name: DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: documents-config
+              key: DB_HOST
+        - name: DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: documents-config
+              key: DB_PORT
+        - name: DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: documents-config
+              key: DB_NAME
+        - name: DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: documents-secret
+              key: DB_USER
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: documents-secret
+              key: DB_PASSWORD
+        - name: HOST
+          valueFrom:
+            configMapKeyRef:
+              name: documents-config
+              key: HOST
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /documents/health-check
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /documents/health-check
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 5
